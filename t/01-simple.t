@@ -1,3 +1,4 @@
+#!/usr/bin/env raku
 use Test;
 use BitEnum;
 
@@ -31,4 +32,3 @@ lives-ok { $x.toggle(A,D) }, 'toggle A,D';
 is +$x, 12, 'C and D are set';
 
 done-testing;
-

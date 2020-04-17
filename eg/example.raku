@@ -1,4 +1,4 @@
-#!/usr/bin/env perl6
+#!/usr/bin/env raku
 
 use BitEnum;
 
@@ -9,16 +9,20 @@ my enum MyBits (
     D => 0x08,
 );
 
-my enum Combos (
-    AB => 0x03,
-    BC => 0x06,
-);
-
 my $x = BitEnum[MyBits].new(6);
 
+put $x;
+
+put +$x;
+
 say $x;
 
-$x.set(AB, C);
+$x.set(A,B);
 
-say $x;
+$x.clear(B);
 
+say $x.isset(A,B);
+
+$x.toggle(C);
+
+.key.say for @$x;

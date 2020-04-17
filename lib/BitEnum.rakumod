@@ -1,6 +1,8 @@
-role BitEnum[::EnumBits]
+role BitEnum[::EnumBits, Str :$prefix, Bool :$lc]
 {
     has Int $.value handles <Numeric Int> = 0;
+    has Int $.length = $prefix ?? $prefix.chars !! 0;
+    has Bool $.lc = $lc;
 
     multi method new(*@bits)
     {
@@ -28,7 +30,18 @@ role BitEnum[::EnumBits]
 
     method list()         { EnumBits.enums.grep({ $.isset($_) }) }
 
-    method Str()          { ~($.list()».key) }
+    method Str()
+    {
+        join(' ',
+             do for $.list().list
+             {
+                 my $str = .key;
+                 $str .= substr($!length) if $!length;
+                 $str .= lc if $!lc;
+                 $str
+             }
+            )
+    }
 
     method gist()         { "$!value = $.Str()" }
 
@@ -149,6 +162,25 @@ set/clear/etc. combinations of bits.
     say $x;
 
     # 7 = A B C
+
+=head2 Trimming prefixes
+
+Sometimes the enumerated symbols have a common prefix that is nice to
+remove for printing.  Pass an optional named parameter I<:prefix> with
+a String and the number of characters in that string will be removed
+from each key when stringifying.  Optionally lowercase them as well
+by passing in I<:lc>
+
+    my enum MyBits (
+        LONG_PREFIX_A => 0x01,
+        LONG_PREFIX_B => 0x02,
+        LONG_PREFIX_C => 0x04,
+        LONG_PREFIX_D => 0x08,
+    );
+
+    my $x = BitEnum[MyBits, prefix => 'LONG_PREFIX_', :lc].new(6);
+
+    put $x; # 'b c' or 'c b'
 
 =head1 COPYRIGHT and LICENSE
 

@@ -104,6 +104,22 @@ Put them in their own, separate enumeration. They won't show up in the stringifi
 
     # 7 = A B C
 
+Trimming prefixes
+-----------------
+
+Sometimes the enumerated symbols have a common prefix that is nice to remove for printing. Pass an optional named parameter *:prefix* with a String and the number of characters in that string will be removed from each key when stringifying. Optionally lowercase them as well by passing in *:lc*
+
+    my enum MyBits (
+        LONG_PREFIX_A => 0x01,
+        LONG_PREFIX_B => 0x02,
+        LONG_PREFIX_C => 0x04,
+        LONG_PREFIX_D => 0x08,
+    );
+
+    my $x = BitEnum[MyBits, prefix => 'LONG_PREFIX_', :lc].new(6);
+
+    put $x; # 'b c' or 'c b'
+
 COPYRIGHT and LICENSE
 =====================
 
