@@ -1,6 +1,7 @@
-role BitEnum[::EnumBits, Str :$prefix, Bool :$lc]
+role BitEnum[::EnumBits, Str:D :$prefix = '', Bool :$lc]
 {
     has Int $.value handles <Numeric Int> = 0;
+    has Str $.prefix = $prefix;
     has Int $.length = $prefix ?? $prefix.chars !! 0;
     has Bool $.lc = $lc;
 
@@ -13,20 +14,48 @@ role BitEnum[::EnumBits, Str :$prefix, Bool :$lc]
 
     multi method new(Int:D $value) { self.bless(:$value) }
 
-    method set(*@bits)    { $!value +|= .value for @bits }
+    sub lookup(Str:D $str is copy)
+    {
+        $str .= uc if $lc;
+        EnumBits::{"$prefix$str"} // die "Bad value: $str"
+    }
 
-    method clear(*@bits)  { $!value +&= +^.value for @bits }
-
-    method isset(*@bits)
+    method set(*@bits is copy --> Nil)
     {
         for @bits
         {
+            $_ = lookup($_) when Str;
+            $!value +|= .value
+        }
+    }
+
+    method clear(*@bits is copy --> Nil)
+    {
+        for @bits
+        {
+            $_ = lookup($_) when Str;
+            $!value +&= +^ .value
+        }
+    }
+
+    method isset(*@bits is copy --> Bool:D)
+    {
+        for @bits
+        {
+            $_ = lookup($_) when Str;
             return False unless .value +& $!value == .value;
         }
         True
     }
 
-    method toggle(*@bits) { $!value +^= .value for @bits }
+    method toggle(*@bits is copy --> Nil)
+    {
+        for @bits
+        {
+            $_ = lookup($_) when Str;
+            $!value +^= .value
+        }
+    }
 
     method list()         { EnumBits.enums.grep({ $.isset($_) }) }
 
@@ -44,7 +73,6 @@ role BitEnum[::EnumBits, Str :$prefix, Bool :$lc]
     }
 
     method gist()         { "$!value = $.Str()" }
-
 }
 
 =begin pod
@@ -168,8 +196,9 @@ set/clear/etc. combinations of bits.
 Sometimes the enumerated symbols have a common prefix that is nice to
 remove for printing.  Pass an optional named parameter I<:prefix> with
 a String and the number of characters in that string will be removed
-from each key when stringifying.  Optionally lowercase them as well
-by passing in I<:lc>
+from each key when stringifying.  Optionally lowercase them as well by
+passing in I<:lc>.  You can also set/clear/toggle bits by substring
+without the prefix.
 
     my enum MyBits (
         LONG_PREFIX_A => 0x01,
@@ -181,6 +210,11 @@ by passing in I<:lc>
     my $x = BitEnum[MyBits, prefix => 'LONG_PREFIX_', :lc].new(6);
 
     put $x; # 'b c' or 'c b'
+
+    $x.set(<a b>);
+    $x.clear(<c>);
+
+    put $x; # 'a b' or 'b a'
 
 =head1 COPYRIGHT and LICENSE
 
