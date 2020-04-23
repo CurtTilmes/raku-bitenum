@@ -2,7 +2,7 @@
 use Test;
 use BitEnum;
 
-plan 11;
+plan 14;
 
 my enum MyBits (
     LONG_PREFIX_A => 0x01,
@@ -34,5 +34,11 @@ lives-ok { $x.toggle(<a d>) }, 'toggle A,D';
 is +$x, 12, 'C and D are set';
 
 is ~$x, 'c d'|'d c', 'Str';
+
+ok ($x.value = 10), 'Set value to 10';
+
+is +$x, 10, 'Set correctly';
+
+is ~$x, 'b d' |'d b', 'Str correctly';
 
 done-testing;

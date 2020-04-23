@@ -1,6 +1,6 @@
 role BitEnum[::EnumBits, Str:D :$prefix = '', Bool :$lc]
 {
-    has Int $.value handles <Numeric Int> = 0;
+    has Int $.value is rw handles <Numeric Int> = 0;
     has Str $.prefix = $prefix;
     has Int $.length = $prefix ?? $prefix.chars !! 0;
     has Bool $.lc = $lc;
